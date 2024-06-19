@@ -1,3 +1,17 @@
+/* 전체 테마*/
+:root {
+    --yellow: #fae100;
+    --purple: #BA91FD;
+    --green: #30FD4E;
+    --blue: rgb(94, 255, 233);
+    --horizontal-space: 25px;
+    --main-border: 1px solid rgba(0, 0, 0, 0.2);
+    --grayColor:rgba(0, 0, 0, 0.5)
+}
+
+
+
+/* 스타일 리셋*/
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
 a, abbr, acronym, address, big, cite, code,
