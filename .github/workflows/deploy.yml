@@ -3,9 +3,17 @@ name: Deploy to AWS
 
 on:
   push:
-    branches:
-      - main
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
 
+
+env:
+  PROJECT_NAME: aselcni
+  BUCKET_NAME: learnway-bucket
+  CODE_DEPLOY_APP_NAME: learnway
+  DEPLOYMENT_GROUP_NAME: learnway
+  
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,7 +26,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           java-version: '17'
-          distribution: 'adopt'
+          distribution: 'temurin'
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -33,25 +41,23 @@ jobs:
           cp -r scripts/ deploy/
           cp appspec.yml deploy/
 
-      - name: Deploy to S3
-        uses: actions/aws-s3@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          bucket: learnway-bucket
-          region: ap-northeast-2
-          source: "deploy/"
-          destination: "/deploy/"
+      # zip파일로 변환
+      - name: Make Zip File                
+        run: zip -qq -r ./$GITHUB_SHA.zip .
+        shell: bash
 
-      - name: Trigger CodeDeploy
-        uses: aws-actions/aws-cli-action@v1
+      # AWS 권한 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: your-aws-region
-          run: |
-            aws deploy create-deployment \
-              --application-name leanway \
-              --deployment-group-name learnway \
-              --deployment-config-name CodeDeployDefault.AllAtOnce \
-              --s3-location bucket=learnway-bucket,bundleType=zip,key=deploy/deploy.zip
+          aws-secret-access-key: ${{ secrets.AWS_SECRET__ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      # AWS S3에 zip파일 업로드
+      - name: Upload to S3
+        run: aws s3 cp --region ap-northeast-2 ./$GITHUB_SHA.zip s3://$BUCKET_NAME/$PROJECT_NAME/$GITHUB_SHA.zip
+  
+      # AWS codeDeploy 배포 생성
+      - name: Code Deploy
+        run: aws deploy create-deployment --application-name $CODE_DEPLOY_APP_NAME --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name $DEPLOYMENT_GROUP_NAME --s3-location bucket=$BUCKET_NAME,bundleType=zip,key=$PROJECT_NAME/$GITHUB_SHA.zip
