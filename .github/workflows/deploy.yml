@@ -27,20 +27,16 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-
+  
+      # 빌드 과정
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
-
+        shell: bash
+        
       - name: Build with Gradle
         run: ./gradlew build
-
-      - name: Prepare deployment package
-        run: |
-          mkdir deploy
-          cp build/libs/*.jar deploy/
-          cp -r scripts/ deploy/
-          cp appspec.yml deploy/
-
+        shell: bash
+        
       # zip파일로 변환
       - name: Make Zip File                
         run: zip -qq -r ./$GITHUB_SHA.zip .
