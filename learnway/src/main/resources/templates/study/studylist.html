@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>스터디 게시판</title>
+</head>
+<body>
+<table>
+            <thead>
+                <tr>
+                    <th>test</th>
+                    <th>test</th>
+                    <th>test</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="study : ${study}" th:onclick="window.location.href='/study/detail/' + [[${study.postid}]]">
+                    <td th:text="${study.postid}">1234 Elm St</td>
+                    <td th:text="${study.title}">(555) 123-4567</td>
+                    <td th:text="${study.content}">Host introduction</td>
+                </tr>
+            </tbody>
+        </table>
+        <button onclick="location.href='/studyadd'">글작성</button>
+</body>
+</html>
