@@ -1,0 +1,14 @@
+version: 0.0
+os: linux
+files:
+  - source: /               # codeDeploy agent가 다운 받은 코드에서 어느 경로를 다운받을지 결정함 (/ -> 전체 파일을 받음)
+    destination: /home/ubuntu/learn   # ec2서버에서 어는 경로에 해당 코드를 저장할지 결정
+permissions:
+  - object: /home/ubuntu/learnway/
+    owner: root
+    group: root
+hooks:
+  AfterInstall:
+    - location: scripts/deploy.sh  # scripts 폴더안에서 deploy.sh를 실행하라는 이벤트
+      timeout: 60
+      runas: root
