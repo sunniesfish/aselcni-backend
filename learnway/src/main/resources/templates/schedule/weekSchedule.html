@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.14/index.global.min.js'></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+
+ <script>
+document.addEventListener('DOMContentLoaded', function() {
+
+      var Calendar = FullCalendar.Calendar;
+      var Draggable = FullCalendar.Draggable;
+
+      var containerEl = document.getElementById('external-events');
+      var calendarEl = document.getElementById('calendar');
+      var checkbox = document.getElementById('drop-remove');
+
+      var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'timeGridWeek',
+        initialDate: new Date(),
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'addEventButton,dayGridMonth,timeGridWeek'
+        },
+        customButtons: {
+          addEventButton: {
+            text: "일정 추가",
+            click: function() {
+              $("#calendarModal").modal("show"); // 모달 나타내기
+              $("#addCalendar").on("click", function() {
+                var startTime = $("#startTime").val();
+                var endTime = $("#endTime").val();
+                var studyway = $("#studyway").val(); //학업구분
+                var subject = $("#subject").val(); //과목
+                var material = $("#material").val(); //학습 종류
+                var progress = $("#progress").val(); //진도 내역
+                var achieveRate = $("#achieveRate").val(); //달성율
+
+                //유효성 검사
+                if (startTime == null || startTime == "") {
+                  alert("시작 시간을 입력하세요");
+                } else if (endTime == null || endTime == "") {
+                  alert("종료 시간을 입력하세요");
+                } else if (studyway == null || studyway == "") {
+                  alert("학업 구분을 입력하세요");
+                } else if (subject == null || subject == "") {
+                  alert("과목을 입력하세요");
+                } else if (material == null || material == "") {
+                  alert("학습 종류를 입력하세요");
+                } else if (progress == null || progress == "") {
+                  alert("진도 내역을 입력하세요");
+                } else if (achieveRate == null || achieveRate == "") {
+                  alert("달성율을 입력하세요");
+                } else if (new Date(endTime) - new Date(startTime) < 0) {
+                  alert("종료 시간이 시작 시간보다 먼저입니다");
+                } else {
+                  var obj = { //전송할 객체 생성
+                    "startTime": startTime,
+                    "endTime": endTime,
+                    "studyway": studyway,
+                    "subject": subject,
+                    "material": material,
+                    "progress": progress,
+                    "achieveRate": achieveRate
+                  };
+
+                  $.ajax({
+                    url: "/schedule/add", // 데이터를 전송할 컨트롤러의 URL
+                    type: "POST",
+                    data: JSON.stringify(obj),
+                    contentType: "application/json",
+                    success: function(response) {
+                      // 서버 응답 처리
+                      console.log(response);
+                      // 모달 창 닫기
+                      $("#calendarModal").modal("hide");
+                      // 캘린더 이벤트 추가 등의 동작 수행
+                      calendar.refetchEvents(); // 일정 추가 후 FullCalendar 다시 렌더링
+                    },
+                    error: function(xhr, status, error) {
+                      // 오류 처리
+                      console.log(error);
+                    }
+                  });
+                }
+              });
+            }
+          }
+        },
+        eventClick:function(info){
+        	
+        	 if (confirm("일정을 수정하시겠습니까?")){
+                 
+        		 var events = new Array();
+                 var obj = new Object;
+                 
+                 obj.id = info.event.id;
+                 events.push(obj);
+               
+                 $.ajax({
+                     url: "/schedule/getDetail",
+                     method: "GET",
+                     dataType: "json",
+                     data: { id: info.event.id },
+                     contentType: 'application/json',
+                     success: function(response) {
+                         console.log(response);
+                         
+                         // 모달창 입력 필드에 받아온 데이터 설정
+                         $("#updateModal #startTime").val(response.startTime);
+                         $("#updateModal #endTime").val(response.endTime);
+                         $("#updateModal #studyway").val(response.studyway);
+                         $("#updateModal #subject").val(response.subject);
+                         $("#updateModal #material").val(response.material);
+                         $("#updateModal #progress").val(response.progress);
+                         $("#updateModal #achieveRate").val(response.achieveRate);
+
+                         // 모달창 열기
+                         $("#updateModal").modal("show");
+                     },
+                     error: function(xhr, status, error) {
+                         console.log(error);
+                     }
+                 });
+               }else{
+               	 info.revert(); // 변경 사항 되돌리기
+               	}
+        	 
+        },
+        editable: true,
+        droppable: true, 
+        eventDrop: function(info) {
+
+          if (confirm("일정 시간을 수정하시겠습니까?")){
+          
+          var event = info.event;
+          var data = {
+        		  "id" : event.id,
+        		  "title": event.title,
+        		  "start": event.start,
+        		  "end": event.end
+          };
+        
+          $.ajax({
+              url: "/schedule/updateTime",
+              method: "PATCH",
+              dataType: "json",
+              data: JSON.stringify(data),
+              contentType: 'application/json',
+              success: function(response) {
+                  console.log(response);
+                  calendar.refetchEvents(); // 일정 업데이트 후 캘린더 다시 렌더링
+              },
+              error: function(xhr, status, error) {
+                  console.log(error);
+              }
+          });
+        }else{
+        	 info.revert(); // 변경 사항 되돌리기
+        	}
+        },
+        eventResize: function(info) {
+        	  if (confirm("일정 시간을 수정하시겠습니까?")) {
+        	    var event = info.event;
+        	    var events = new Array();
+        	    var obj = new Object;
+
+        	    obj.id = event.id;
+        	    obj.title = event.title;
+        	    obj.start = event.start;
+        	    obj.end = event.end;
+        	    events.push(obj);
+        	    console.log(events);
+
+        	    $.ajax({
+        	      url: "/schedule/updateTime",
+        	      method: "PATCH",
+        	      dataType: "json",
+        	      data: JSON.stringify(events),
+        	      contentType: 'application/json',
+        	      success: function(response) {
+        	        console.log(response);
+        	        calendar.refetchEvents(); // 일정 업데이트 후 캘린더 다시 렌더링
+        	      },
+        	      error: function(xhr, status, error) {
+        	        console.log(error);
+        	      }
+        	    });
+        	  } else {
+        	    info.revert(); // 변경 사항 되돌리기
+        	  }
+        	},
+        events : function(fetchInfo,successCallback,failureCallback){
+        	$.ajax({
+        		url:"/schedule/findAll",
+        		type:"GET",
+        		dataType:"json",
+        		success: function(data){
+        			successCallback(data);
+        		},
+        		error: function(xhr,status,error){
+        			failureCallback(error);
+        		}
+        	});
+          }
+        });
+ 
+      calendar.render();
+
+      $("#calendarModal").on("hidden.bs.modal", function() {
+        // 모달 창이 닫힌 후 실행되는 코드
+        // 입력 필드 값 리셋
+        $("#startTime").val("");
+        $("#endTime").val("");
+        $("#studyway").val("");
+        $("#subject").val("");
+        $("#material").val("");
+        $("#progress").val("");
+        $("#achieveRate").val("");
+      });
+    });
+    
+//일정 삭제하기
+$("#deleteCalendar").on("click", function() {
+	if (confirm("일정 시간을 수정하시겠습니까?")) {
+	    var event = info.event;
+	    var events = new Array();
+	    var obj = new Object;
+	
+	    obj.id = event.id;
+	    obj.title = event.title;
+	    obj.start = event.start;
+	    obj.end = event.end;
+	    events.push(obj);
+	    console.log(events);
+	
+	    $.ajax({
+	      url: "/schedule/updateTime",
+	      method: "PATCH",
+	      dataType: "json",
+	      data: JSON.stringify(events),
+	      contentType: 'application/json',
+	      success: function(response) {
+	        console.log(response);
+	        calendar.refetchEvents(); // 일정 업데이트 후 캘린더 다시 렌더링
+	      },
+	      error: function(xhr, status, error) {
+	        console.log(error);
+	      }
+	    });
+	  } else {
+	    info.revert(); // 변경 사항 되돌리기
+	  }
+	)};
+	
+</script>
+  </head>
+  <body>
+		<!-- modal 추가 -->
+		<div class="modal fade" id="calendarModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+		    aria-hidden="true">
+		    <div class="modal-dialog" role="document">
+		        <div class="modal-content">
+		            <div class="modal-header">
+		                <h5 class="modal-title" id="exampleModalLabel">일정을 입력하세요.</h5>
+		                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+		                    <span aria-hidden="true">&times;</span>
+		                </button>
+		            </div>
+		            <div class="modal-body">
+		                <div class="form-group">
+		                    <label for="taskId" class="col-form-label">시작 날짜</label>
+		                    <input type="datetime-local" class="form-control" id="startTime" name="startTime">
+		                    <label for="taskId" class="col-form-label">종료 날짜</label>
+		                    <input type="datetime-local" class="form-control" id="endTime" name="endTime">
+		                    <label for="taskId" class="col-form-label">학업 구분</label>
+		                    <input type="text" class="form-control" id="studyway" name="studyway">
+		                    <label for="taskId" class="col-form-label">과목</label>
+		                    <input type="text" class="form-control" id="subject" name="subject">
+		                </div>
+		                <div>
+		                	<label for="taskId" class="col-form-label">학습종류</label>
+		                    <input type="text" class="form-control" id="material" name="material">
+		                    <label for="taskId" class="col-form-label">진도 내역</label>
+		                    <input type="text" class="form-control" id="progress" name="progress">
+		                    <label for="taskId" class="col-form-label">달성율</label>
+		                    <input type="text" class="form-control" id="achieveRate" name="achieveRate">	
+		                </div>
+		            </div>
+		            <div class="modal-footer">
+		                <button type="button" class="btn btn-primary float-right insertBtn" id="addCalendar">추가</button>
+		                <button type="button" class="btn btn-secondary" data-dismiss="modal" id="sprintSettingModalClose">취소</button>
+		            </div>		
+		        </div>
+		    </div>
+		</div>
+		<!-- 수정 modal 추가 -->
+		<div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+		    aria-hidden="true">
+		    <div class="modal-dialog" role="document">
+		        <div class="modal-content">
+		            <div class="modal-header">
+		                <h5 class="modal-title" id="exampleModalLabel">일정을 수정하세요.</h5>
+		                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+		                    <span aria-hidden="true">&times;</span>
+		                </button>
+		            </div>
+		            <div class="modal-body">
+		                <div class="form-group">
+		                    <label for="taskId" class="col-form-label">시작 날짜</label>
+		                    <input type="datetime-local" class="form-control" id="startTime" name="startTime">
+		                    <label for="taskId" class="col-form-label">종료 날짜</label>
+		                    <input type="datetime-local" class="form-control" id="endTime" name="endTime">
+		                    <label for="taskId" class="col-form-label">학업 구분</label>
+		                    <input type="text" class="form-control" id="studyway" name="studyway">
+		                    <label for="taskId" class="col-form-label">과목</label>
+		                    <input type="text" class="form-control" id="subject" name="subject">
+		                </div>
+		                <div>
+		                	<label for="taskId" class="col-form-label">학습종류</label>
+		                    <input type="text" class="form-control" id="material" name="material">
+		                    <label for="taskId" class="col-form-label">진도 내역</label>
+		                    <input type="text" class="form-control" id="progress" name="progress">
+		                    <label for="taskId" class="col-form-label">달성율</label>
+		                    <input type="text" class="form-control" id="achieveRate" name="achieveRate">	
+		                </div>
+		            </div>
+		            <div class="modal-footer">
+		                <button type="button" class="btn btn-primary float-right insertBtn" id="addCalendar">수정</button>
+		                <button type="button" class="btn btn-danger float-right insertBtn" id="deleteCalendar">삭제</button>
+		                <button type="button" class="btn btn-secondary" data-dismiss="modal" id="sprintSettingModalClose">취소</button>
+		            </div>		
+		        </div>
+		    </div>
+		</div>
+  			
+	   <div id="calendarBox">
+	     <div id='calendar'></div>
+	   </div>
+  </body>
+</html>
