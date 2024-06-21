@@ -1,6 +1,5 @@
 package com.learnway.study.controller;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,8 +11,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.learnway.study.domain.Study;
 import com.learnway.study.domain.StudyRepository;
-import com.learnway.study.dto.Study;
 import com.learnway.study.dto.StudyDto;
 import com.learnway.study.service.StudyService;
 
@@ -67,10 +66,7 @@ public class StudyController {
 		
 		}
 		
-	@GetMapping(value="/createRoom")
-	public String createRoom() {
-		return "study/createRoom";
-	}
+
 	
 	
 	

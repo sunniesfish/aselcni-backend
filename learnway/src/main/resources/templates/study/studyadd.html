@@ -5,10 +5,19 @@
 <title>study add</title>
 
 <script>
-    function showPopup(event){
+ /*팝업 나중에 주석제거
+ function showPopup(event){
     	
  			event.preventDefault();
             window.open("/createRoom","팝업 테스트","width=400, height=300, top=10, left=10");
+        }
+     */
+     
+     
+    function createRoom(event){
+    	
+ 			event.preventDefault();
+            window.location.href="/createRoom";
         }
     </script>
 </head>
@@ -20,7 +29,7 @@
 종료일<input type="text" name="enddate"><br/>
 참여가능<input type="radio" name="isjoin" value=1 >
 참여불가<input type="radio" name="isjoin" value=0><br/>
-채팅방 생성<button onclick="showPopup(event);">생성하기</button><br/>
+채팅방 생성<button onclick="createRoom(event);">생성하기</button><br/>
 지도 <br/>
 태그 <br/>
 문제 <br/>

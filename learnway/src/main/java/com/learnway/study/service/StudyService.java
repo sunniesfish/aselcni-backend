@@ -2,7 +2,7 @@ package com.learnway.study.service;
 
 import org.springframework.stereotype.Service;
 
-import com.learnway.study.dto.Study;
+import com.learnway.study.domain.Study;
 import com.learnway.study.dto.StudyDto;
 
 @Service

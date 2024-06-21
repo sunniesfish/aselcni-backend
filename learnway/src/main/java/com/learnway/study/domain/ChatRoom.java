@@ -1,4 +1,4 @@
-package com.learnway.study.dto;
+package com.learnway.study.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

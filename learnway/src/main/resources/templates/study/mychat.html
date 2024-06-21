@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>채팅방</title>
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+<style>
+    #msgArea {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .message {
+        display: flex;
+        margin: 10px 0;
+    }
+
+    .message.self {
+        justify-content: flex-start;
+    }
+
+    .message.other {
+        justify-content: flex-end;
+    }
+
+    .bubble {
+        max-width: 60%;
+        padding: 10px;
+        border-radius: 10px;
+        word-wrap: break-word;
+    }
+
+    .self .bubble {
+        background-color: #d1e7dd;
+        color: #0f5132;
+        align-self: flex-start;
+    }
+
+    .other .bubble {
+        background-color: #f8d7da;
+        color: #842029;
+        align-self: flex-end;
+    }
+</style>
+
+<script>
+/* $(document).ready(function(){
+	var roomId = $("#roomId").text();
+	var name = $("#name").text();
+	
+	var sock = new SockJS("/stomp/chat")
+	var stomp = Stomp.over(sock);
+	
+	stomp.connect({},function(frame){
+		
+		stomp.subscribe("/sub/study/mychat/"+roomId,function(chat){
+			var content = JSON.parse(chat.body);
+			var str = "";
+			if(content.name==name){
+				 str = "<div class='message self'>";
+                 str += "<div class='bubble'>";
+                 str += "<b>" + content.name + " : " + content.message + "</b>";
+                 str += "</div></div>";
+             } else {
+                 str = "<div class='message other'>";
+                 str += "<div class='bubble'>";
+                 str += "<b>" + content.name + " : " + content.message + "</b>";
+                 str += "</div></div>";
+             }
+			$("#msgArea").append(str);	
+			
+		});
+		
+		 stomp.send('/pub/chat/enter',{},JSON.stringify({roomId: roomId,name: name})); 
+	});
+	$("button-send").on("click",function(){
+		var msg = $("#msg").val();
+		stomp.send('/pub/chat/message',{},JSON.stringify({roomId:roomId,name:name}));
+		$("#msg").val('');
+	});
+}); */
+
+    function getFormattedTime() {
+        var now = new Date();
+
+        var hours = now.getHours();
+        var minutes = now.getMinutes();
+        var seconds = now.getSeconds();
+
+        var period = hours >= 12 ? '오후' : '오전';
+        hours = hours % 12;
+        hours = hours ? hours : 12; // 0시를 12시로 변경
+
+        // 두 자리 숫자로 포맷
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+       
+
+        var formattedTime = period + ' ' + hours + ':' + minutes;
+        return formattedTime;
+    }
+    
+$(document).ready(function () {
+    var roomId = $("#roomId").text();
+    var name = $("#name").text();
+//    var datetime = getFormattedTime();
+//    var datetime =Date().now();
+    
+    var now = new Date();
+    var year = now.getFullYear();
+    var month = ('0' + (now.getMonth() + 1)); // 월은 0부터 시작하므로 +1을 해준다. 두 자리로 표시하기 위해 slice를 사용
+    var day = ('0' + now.getDate()).slice(-2); // 일자도 두 자리로 표시하기 위해 slice를 사용
+
+    var hours = ('0' + now.getHours()).slice(-2); // 시간
+    var minutes = ('0' + now.getMinutes()).slice(-2); // 분
+    var seconds = ('0' + now.getSeconds()).slice(-2); // 초
+ 
+    var datetime = year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
+    
+    
+    var sock = new SockJS("/stomp/chat");
+    var stomp = Stomp.over(sock);
+
+    stomp.connect({}, function (frame) {
+        console.log("Connected: 연결 " + frame);
+
+        stomp.subscribe("/sub/chat/room/" + roomId, function (chat) {
+            var content = JSON.parse(chat.body);
+            var str = '';
+
+            if (content.type === 'ENTER') {
+                str = "<div class='message enter'>";
+                str += "<div class='bubble'>";
+                str += "<b>" + content.message+ "</b><br/>";
+                str += "</div></div>";
+            } else if(content.type==='CHAT') {
+            	if(content.name===name){
+            		 str = "<div class='message self'>";
+                     str += "<div class='bubble'>";
+                     str += "<b>" + content.name + " : " + content.message+ "</b><br/>";
+                     str += datetime;
+                     str += "</div></div>";
+            	} else{
+                str = "<div class='message other'>";
+                str += "<div class='bubble'>";
+                str += "<b>" + content.name + " : " + content.message+ "</b><br/>";
+                str += datetime;
+                str += "</div></div>";
+            	}
+            }
+            $("#msgArea").append(str);
+        });
+
+        stomp.send('/pub/chat/enter', {}, JSON.stringify({type:'ENTER',roomId: roomId, name: name}));
+    });
+
+    $("#button-send").on("click", function () {
+        var msg = $("#msg").val();
+        stomp.send('/pub/chat/message', {}, JSON.stringify({type:'CHAT',roomId: roomId, message: msg,name: name,date:datetime}));
+        $("#msg").val('');
+    });
+});
+</script>
+</head>
+<body>
+방번호 <span id="roomId" th:text="${roomId}"></span>
+참여자 <span id="name" th:text="${name}"></span>
+<div id="msgArea"></div>
+<input type="text" id="msg" placeholder="메시지 입력">
+<button id="button-send">전송</button>
+</body>
+</html>
