@@ -1,7 +1,5 @@
 package com.learnway.study.domain;
 
-import com.learnway.member.domain.Member;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -20,24 +18,17 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name="study_chatroom")
-public class ChatRoom {
-
+@Table(name="Study_tag")
+public class StudyTag {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name="study_chatroomid",nullable = false)
-	private Integer chatroomid;
+	@Column(name="study_tagid" , nullable = false)
+	private Integer tagId;
+	
+	@Column(name="tag")
+	private String tag;
 	
 	@ManyToOne
 	@JoinColumn(name = "study_postid", nullable = false)
 	private Study study;
-//	엔티티생성후 제거예정
-	@ManyToOne
-	@JoinColumn(name = "member_id", nullable = false)
-    private Member member;
-	
-	
-	@Column(name="study_roomname",nullable = false)
-	private String roomname;
-	
 }

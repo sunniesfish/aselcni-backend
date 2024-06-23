@@ -41,7 +41,7 @@ public class StudyChatController {
 	public String addRoom(ChatRoomDto dto,Model model) {
 		
 		//채팅방 이름저장 ->수정필요 (FK로 게시글id,맴버id 필요함)
-		studyChatRepository.save(studyChatService.chatRoomCreate(dto));
+//		studyChatService.chatRoomCreate(dto,0);
 		
 		
 		model.addAttribute("name",dto.getName()); //채팅방-멤버테이블 가져올값
@@ -65,8 +65,10 @@ public class StudyChatController {
 		
 		LocalDateTime datetime = LocalDateTime.parse(dto.getDate(),DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 		dto.setDatetime(datetime);
-
+		
+		System.out.println(dto.getRoomId()+ "채팅방 아이디");
 		chatMessageRepository.save(studyChatService.storechat(dto));
+		
 		System.out.println("채팅 저장됨");
 		template.convertAndSend("/sub/chat/room/"+dto.getRoomId(),dto);
 

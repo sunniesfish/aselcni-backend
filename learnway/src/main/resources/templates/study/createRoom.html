@@ -3,15 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <title>채팅방 생성</title>
+ <script>
+        function sendToParent() {
+            var roomname = document.getElementById('roomname').value;
+    //        var name = document.getElementById('name').value;
+//            var roomId = document.getElementById('roomId').value;
+
+            if (window.opener && !window.opener.closed) {
+                window.opener.document.getElementById('roomname').value = roomname;
+     //           window.opener.document.getElementById('name').value = name;
+//                window.opener.document.getElementById('roomId').value = roomId;
+            }
+            window.close();
+        }
+    </script>
 </head>
 <body>
-<form action="/joinRoom" method="post">
-   
-   <div>채팅방 이름: <input type="text" name="roomname" id="roomname" required></div>
-   <div>임시 사용자이름: <input type="text" name="name" id="name"></div>
-   <div>룸 ID: <input type="text" name="roomId" id="roomId" required></div>
-
-<input type="submit" value="입장">
-</form>
+    <form action="javascript:sendToParent();" method="post">
+        <div>채팅방 이름: <input type="text" name="roomname" id="roomname" required></div>
+  <!--       <div>룸 ID: <input type="text" name="roomId" id="roomId" required></div> -->
+        <input type="submit" value="입장">
+    </form>
 </body>
 </html>

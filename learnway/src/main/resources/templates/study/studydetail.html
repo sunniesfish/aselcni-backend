@@ -7,6 +7,15 @@
 <body>
    제목: <h1 th:text="${study.title}"></h1>
    내용: <div th:text="${study.content}"></div>
+   시작일 : <div th:text="${study.startdate}"></div>
+   종료일 : <div th:text="${study.enddate}"></div>
+   <form action="/joinRoom" method="post">
    
+   <div>채팅방 이름: <input type="text" name="roomname" id="roomname" required></div>
+   <div>임시 사용자이름: <input type="text" name="name" id="name"></div>
+   <div>룸 ID: <input type="text" name="roomId" id="roomId" required></div>
+
+<input type="submit" value="입장">
+</form>
 </body>
 </html>

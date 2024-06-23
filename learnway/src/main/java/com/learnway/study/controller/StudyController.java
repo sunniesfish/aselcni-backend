@@ -13,17 +13,23 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.learnway.study.domain.Study;
 import com.learnway.study.domain.StudyRepository;
+import com.learnway.study.dto.ChatRoomDto;
 import com.learnway.study.dto.StudyDto;
+import com.learnway.study.dto.StudyTagDto;
+import com.learnway.study.service.StudyPostService;
 import com.learnway.study.service.StudyService;
 
 @Controller
 @RequestMapping
 public class StudyController {
 	
+	
+	@Autowired
+	private StudyService studyService; 
 	@Autowired
 	StudyRepository studyRepository;
 	@Autowired
-	StudyService studyService;
+	StudyPostService studyPostService;
 	
 	
 
@@ -41,10 +47,10 @@ public class StudyController {
 	}
 	
 	@PostMapping(value="/studyadd")
-	public String studyadd(StudyDto dto) {
-		Study study = studyService.boardadd(dto);
+	public String studyadd(StudyDto studyDto,ChatRoomDto chatRoomDto,StudyTagDto studyTagDto) {
 		
-		studyRepository.save(study);
+		studyService.crateBoard(studyDto,chatRoomDto,studyTagDto);
+		System.out.println(studyTagDto.getTag()+"태그값");
 		
 		System.out.println("post studyadd 진입");
 		return "redirect:/studylist";
